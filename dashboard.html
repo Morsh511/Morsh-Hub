@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة المصادر</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #7c6aff;
+      --accent2: #ff6a9a;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before { content: ''; position: fixed; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,106,255,0.12) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text h1 { font-size: 1.3rem; font-weight: 700; }
+    .logo-text p { font-size: 0.75rem; color: var(--muted); }
+    .add-btn { background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: white; padding: 10px 20px; border-radius: 10px; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.2s; }
+    .add-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .filters { display: flex; gap: 8px; margin-bottom: 1.8rem; flex-wrap: wrap; }
+    .filter-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 7px 16px; border-radius: 8px; font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(124,106,255,0.1); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; position: relative; overflow: hidden; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; animation: fadeUp 0.4s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .card:hover { transform: translateY(-4px); border-color: var(--platform-color, var(--accent)); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .card::before { content: ''; position: absolute; top: 0; right: 0; width: 3px; height: 100%; background: var(--platform-color, var(--accent)); border-radius: 0 16px 16px 0; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .platform-info { display: flex; align-items: center; gap: 10px; }
+    .platform-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .platform-name { font-size: 0.72rem; color: var(--platform-color, var(--muted)); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .account-name { font-size: 1rem; font-weight: 700; margin-top: 2px; }
+    .icon-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .icon-btn.delete:hover { color: #ff6a6a; border-color: #ff6a6a; }
+    .description { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 14px; min-height: 36px; }
+    .open-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+    .open-btn:hover { background: var(--platform-color, var(--accent)); border-color: transparent; color: white; }
+    .empty { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text); }
+    .loading { grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 24px; border-radius: 12px; font-size: 0.85rem; transition: transform 0.3s; z-index: 200; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; width: 90%; max-width: 460px; transform: translateY(20px); transition: transform 0.25s; }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal h2 { font-size: 1.2rem; margin-bottom: 1.5rem; }
+    label { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    input, select, textarea { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.88rem; padding: 10px 14px; margin-bottom: 14px; outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 70px; }
+    select option { background: var(--card); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+    .modal-actions button { flex: 1; padding: 11px; border-radius: 10px; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
+    .btn-cancel { background: var(--card); color: var(--muted); }
+    .btn-save { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+    .count-badge { background: rgba(124,106,255,0.15); color: var(--accent); font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div class="logo-text">
+        <h1>لوحة المصادر</h1>
+        <p>كل حساباتك في مكان واحد</p>
+      </div>
+    </div>
+    <button class="add-btn" onclick="openModal()">+ إضافة مصدر</button>
+  </header>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCards('all', this)">الكل <span class="count-badge" id="count-all">0</span></button>
+    <button class="filter-btn" onclick="filterCards('twitter', this)">تويتر</button>
+    <button class="filter-btn" onclick="filterCards('instagram', this)">انستقرام</button>
+    <button class="filter-btn" onclick="filterCards('youtube', this)">يوتيوب</button>
+    <button class="filter-btn" onclick="filterCards('reddit', this)">ريديت</button>
+    <button class="filter-btn" onclick="filterCards('tiktok', this)">تيك توك</button>
+    <button class="filter-btn" onclick="filterCards('telegram', this)">تيليغرام</button>
+    <button class="filter-btn" onclick="filterCards('other', this)">أخرى</button>
+  </div>
+  <div class="grid" id="grid"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>➕ إضافة مصدر جديد</h2>
+    <label>المنصة</label>
+    <select id="m-platform">
+      <option value="twitter">🐦 تويتر / X</option>
+      <option value="instagram">📸 انستقرام</option>
+      <option value="youtube">▶️ يوتيوب</option>
+      <option value="reddit">🔴 ريديت</option>
+      <option value="tiktok">🎵 تيك توك</option>
+      <option value="telegram">✈️ تيليغرام</option>
+      <option value="other">🌐 أخرى</option>
+    </select>
+    <label>اسم الحساب أو القناة</label>
+    <input id="m-name" type="text" placeholder="مثال: @elonmusk" />
+    <label>رابط الصفحة</label>
+    <input id="m-url" type="url" placeholder="https://..." />
+    <label>وصف قصير (اختياري)</label>
+    <textarea id="m-desc" placeholder="وصف هذا الحساب..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+      <button class="btn-save" onclick="saveCard()">حفظ</button>
+    </div>
+  </div>
+</div>
+<script>
+  // ======= إعدادات JSONBin =======
+  const BIN_ID  = 'NEW'; // سيتم إنشاؤه تلقائياً
+  const API_KEY = '$2a$10$placeholder'; // سيتم استبداله
+  // ================================
+
+  const PLATFORMS = {
+    twitter:   { label: 'تويتر / X',  icon: '🐦', color: '#1da1f2' },
+    instagram: { label: 'انستقرام',   icon: '📸', color: '#e1306c' },
+    youtube:   { label: 'يوتيوب',     icon: '▶️', color: '#ff0000' },
+    reddit:    { label: 'ريديت',      icon: '🔴', color: '#ff4500' },
+    tiktok:    { label: 'تيك توك',    icon: '🎵', color: '#69c9d0' },
+    telegram:  { label: 'تيليغرام',   icon: '✈️', color: '#2ca5e0' },
+    other:     { label: 'أخرى',       icon: '🌐', color: '#7c6aff' },
+  };
+
+  let allCards = [];
+  let currentFilter = 'all';
+  let binId = localStorage.getItem('morsh_bin_id');
+  const JSONBIN_KEY = '$2a$10$8Q9WvzGzXk2mN3pL7rYqOuKJhF4sDtVcEiWbA6nMxPy1oRl5CgZjT';
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  async function initBin() {
+    if (binId) return;
+    try {
+      const res = await fetch('https://api.jsonbin.io/v3/b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY, 'X-Bin-Name': 'morsh-dashboard' },
+        body: JSON.stringify({ cards: [] })
+      });
+      const data = await res.json();
+      binId = data.metadata.id;
+      localStorage.setItem('morsh_bin_id', binId);
+    } catch(e) { console.error(e); }
+  }
+
+  async function loadCards() {
+    await initBin();
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_KEY }
+      });
+      const data = await res.json();
+      allCards = data.record.cards || [];
+      render();
+    } catch(e) {
+      document.getElementById('grid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h3>تعذر التحميل</h3></div>`;
+    }
+  }
+
+  async function saveToCloud() {
+    await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+      body: JSON.stringify({ cards: allCards })
+    });
+  }
+
+  function render() {
+    const grid = document.getElementById('grid');
+    const filtered = currentFilter === 'all' ? allCards : allCards.filter(c => c.platform === currentFilter);
+    document.getElementById('count-all').textContent = allCards.length;
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><h3>لا يوجد مصادر</h3><p>اضغط "+ إضافة مصدر"</p></div>`;
+      return;
+    }
+    grid.innerHTML = filtered.map((c, i) => {
+      const p = PLATFORMS[c.platform] || PLATFORMS.other;
+      return `<div class="card" style="--platform-color:${p.color}; animation-delay:${i*0.05}s">
+        <div class="card-top">
+          <div class="platform-info">
+            <div class="platform-icon">${p.icon}</div>
+            <div><div class="platform-name">${p.label}</div><div class="account-name">${c.name}</div></div>
+          </div>
+          <button class="icon-btn delete" onclick="deleteCard('${c.id}')">🗑</button>
+        </div>
+        <div class="description">${c.desc || 'لا يوجد وصف'}</div>
+        <a class="open-btn" href="${c.url}" target="_blank">فتح الحساب ↗</a>
+      </div>`;
+    }).join('');
+  }
+
+  function filterCards(platform, btn) {
+    currentFilter = platform;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  async function deleteCard(id) {
+    allCards = allCards.filter(c => c.id !== id);
+    render();
+    await saveToCloud();
+    showToast('✅ تم الحذف وحُفظ');
+  }
+
+  function openModal() { document.getElementById('modal').classList.add('open'); }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    ['m-name','m-url','m-desc'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  async function saveCard() {
+    const name = document.getElementById('m-name').value.trim();
+    const url  = document.getElementById('m-url').value.trim();
+    const desc = document.getElementById('m-desc').value.trim();
+    const platform = document.getElementById('m-platform').value;
+    if (!name || !url) { showToast('⚠️ يرجى تعبئة الاسم والرابط'); return; }
+    allCards.push({ id: Date.now().toString(), platform, name, url, desc });
+    closeModal();
+    render();
+    await saveToCloud();
+    showToast('✅ تمت الإضافة وحُفظت!');
+  }
+
+  document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+  loadCards();
+</script>
+</body>
+</html>
